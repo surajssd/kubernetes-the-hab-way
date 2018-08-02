@@ -68,6 +68,7 @@ file with service instance specific configuration, as that's not supported
 by Habitat (as far as I know).
 
 ```
+## TO DO: Probably add this to user.toml file
 # On each node, replace X with node number (i.e. '0' for node-0 and so on)
 cat >/var/lib/etcd-env-vars <<ETCD_ENV_VARS
 export ETCD_LISTEN_CLIENT_URLS="https://192.168.222.1X:2379"
@@ -111,7 +112,7 @@ Start the kubernetes-apiserver service:
 
 ```
 # On node-0
-sudo hab svc load core/kubernetes-apiserver
+sudo hab svc load kosy/kubernetes-apiserver
 ```
 
 Now we have to update the kubernetes-apiserver.default service group
@@ -137,7 +138,7 @@ files and configure it accordingly:
 
 ```
 # On node-0
-sudo hab svc load core/kubernetes-controller-manager
+sudo hab svc load kosy/kubernetes-controller-manager
 for f in /vagrant/certificates/{ca.pem,ca-key.pem}; do sudo hab file upload kubernetes-controller-manager.default 1 "${f}"; done
 sudo hab config apply kubernetes-controller-manager.default 1 /vagrant/config/svc-kubernetes-controller-manager.toml
 ```
@@ -148,7 +149,7 @@ The kube-scheduler doesn't require specific configuration:
 
 ```
 # On node-0
-sudo hab svc load core/kubernetes-scheduler
+sudo hab svc load kosy/kubernetes-scheduler
 ```
 
 ### `kubernetes-the-hab-way` kubectl context
@@ -230,13 +231,13 @@ Configure and start kube-proxy:
 # On node-0
 sudo mkdir -p /var/lib/kube-proxy
 sudo cp /vagrant/config/kube-proxy.kubeconfig /var/lib/kube-proxy/kubeconfig
-sudo hab svc load core/kubernetes-proxy
+sudo hab svc load kosy/kubernetes-proxy
 sudo hab config apply kubernetes-proxy.default 1 /vagrant/config/svc-kubernetes-proxy.toml
 
 # On node-1 and node-2
 sudo mkdir -p /var/lib/kube-proxy
 sudo cp /vagrant/config/kube-proxy.kubeconfig /var/lib/kube-proxy/kubeconfig
-sudo hab svc load core/kubernetes-proxy
+sudo hab svc load kosy/kubernetes-proxy
 ```
 
 After successful setup, `iptables -nvL -t nat` will show multiple new chains,
@@ -283,7 +284,7 @@ cat >/var/lib/kubelet-config/cni/10-bridge.conf <<CNI_CONFIG
 }
 CNI_CONFIG
 for f in /vagrant/certificates/{$(hostname)/node.pem,$(hostname)/node-key.pem,ca.pem} /vagrant/config/$(hostname)/kubeconfig; do sudo cp "${f}" "/var/lib/kubelet-config/"; done
-sudo hab svc load core/kubernetes-kubelet
+sudo hab svc load kosy/kubernetes-kubelet
 sudo hab config apply kubernetes-kubelet.default 1 /vagrant/config/svc-kubelet.toml # noop on repeated calls
 ```
 
